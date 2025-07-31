@@ -368,7 +368,7 @@ export namespace mysql {
             + ` -u ${con.cfg.user}`
             + ` --default-character-set=utf8`
             + (con.cfg.password.length > 0
-                ? ` -p${con.cfg.password}`
+                ? ` -p"${con.cfg.password}"`
                 : '')
             + ` --port ${con.cfg.port}`
             + ` --host ${con.cfg.host}`
