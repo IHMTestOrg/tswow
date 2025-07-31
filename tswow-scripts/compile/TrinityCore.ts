@@ -307,7 +307,9 @@ export namespace TrinityCore {
         }
 
         bpaths.TrinityCore.libraries(type).forEach(x=>{
-            x.copy(ipaths.bin.libraries.build.pick(type).join(x.basename()))
+            if (x.exists()) {
+                x.copy(ipaths.bin.libraries.build.pick(type).join(x.basename()))
+            }
         });
 
         if(isWindows()) {
