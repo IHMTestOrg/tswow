@@ -248,6 +248,8 @@ export namespace TrinityCore {
                 +` -DTRACY_TIMER_FALLBACK="${!Args.hasFlag('tracy-better-timer',[process.argv,args1])?'ON':'OFF'}"`
                 +` -DBUILD_TESTING="OFF"`
                 +` -DASAN="${process.argv.includes('asan')?'ON':'OFF'}"`
+                +` -DTSAN="${process.argv.includes('tsan')?'ON':'OFF'}"`
+                +` -DUBSAN="${process.argv.includes('ubsan')?'ON':'OFF'}"`
                 +` -S "${spaths.cores.TrinityCore.get()}"`
                 +` -B "${bpaths.TrinityCore.get()}"`;
                 buildCommand = `${cmake} --build ${bpaths.TrinityCore.get()} --config ${type}`;
