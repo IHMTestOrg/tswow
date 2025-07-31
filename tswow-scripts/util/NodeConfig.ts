@@ -1,5 +1,6 @@
 import { BuildType } from "../util/BuildType";
 import { ConfigFile, Property, Section } from "../util/ConfigFile";
+import { isWindows } from "./Platform";
 
 export interface DatabaseSettings {
     host: string;
@@ -22,7 +23,7 @@ export class NodeConfigClass extends ConfigFile {
         name: 'Default.Client'
       , description: 'The client that is automatically selected if none is specified in the current dataset'
       , important: 'No spaces allowed!'
-      , examples: [['C:\\wowdev\\client','']]
+      , examples: [[ isWindows() ? 'C:\\wowdev\\client' : '~/3.3.5','']]
     })
     DefaultClient!: string
 
