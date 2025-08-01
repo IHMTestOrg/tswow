@@ -25,6 +25,7 @@ import { term } from '../util/Terminal';
 import { copyExtLibs } from './CommonCore';
 import { bpaths, spaths } from './CompilePaths';
 import { DownloadFile } from './Downloader';
+import * as os from 'os';
 
 // https://stackoverflow.com/a/68703218/17188274
 function prefix(words: string[]){
@@ -274,7 +275,7 @@ export namespace TrinityCore {
                 +` -DASAN="${process.argv.includes('asan')?'ON':'OFF'}"`
                 +` -DTSAN="${process.argv.includes('tsan')?'ON':'OFF'}"`
                 +` -DUBSAN="${process.argv.includes('ubsan')?'ON':'OFF'}"`
-                buildCommand = 'make -j 4';
+                buildCommand = `make -j ${os.cpus().length}`;
                 await bpaths.TrinityCore.doIn(() => {
                     wsys.exec(setupCommand, 'inherit');
                     if(generateOnly) return;

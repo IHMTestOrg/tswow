@@ -20,6 +20,7 @@ import { Module, ModuleEndpoint } from "./Modules";
 import { NodeExecutable } from "./Node";
 import { NodeConfig } from "./NodeConfig";
 import { applyTSTLHack } from "./TSTLHack";
+import * as os from 'os';
 
 const livescript_example =
 `export function Main(events: TSEvents) {
@@ -307,7 +308,8 @@ export class Livescripts {
                 ? `"bin/cmake/bin/cmake.exe"`
                 : `cmake`)
             + ` --build ${builddir.lib.abs()}`
-            + ` --config ${buildType}`;
+            + ` --config ${buildType}`
+            + isWindows() ? `` : `--parallel ${os.cpus().length}`;
 
         try {
             term.log(this.logName(),`Compiling C++ binary...`)
