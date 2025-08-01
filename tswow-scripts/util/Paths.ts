@@ -694,6 +694,7 @@ export function SourcePaths(pathIn: string) {
         node_modules: dir({
             typescript_js: file('typescript/lib/tsc'),
         }),
+        tc_cmake_params: file('tc_cmake_params.txt'),
         misc: dir({
             mpqbuilder: dir({}),
             adtcreator: dirn('adt-creator',{}),

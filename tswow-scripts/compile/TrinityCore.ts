@@ -208,13 +208,21 @@ export namespace TrinityCore {
         })
     }
 
-    export async function install(cmake: string, openssl: string, mysql: string, type: BuildType, args1: string[]) {
-        //
-        // Tracy
-        //
-        const tracyEnabled = Args.hasFlag(['tracy','tracy-enable'],[process.argv,args1])
+    export async function install(cmake: string, openssl: string, mysql: string, args1: string[]) {
+        const tcCmakeParams = spaths.tc_cmake_params.readString('').split('\n').join(' ');
+        const type : BuildType = (() => {
+            if (Args.hasFlag('trinitycore-release', args1)) return 'Release';
+            if (Args.hasFlag('trinitycore-relwithdebinfo', args1)) return 'RelWithDebInfo';
+            if (Args.hasFlag('trinitycore-debug', args1)) return 'Debug';
 
-        if(Args.hasFlag('notc',[process.argv,args1])) {
+            if (Args.hasFlag('release', args1)) return 'Release';
+            if (Args.hasFlag('relwithdebinfo', args1)) return 'RelWithDebInfo';
+            if (Args.hasFlag('debug', args1)) return 'Debug';
+
+            return 'RelWithDebInfo';
+        })();
+
+        if(Args.hasFlag('notc', args1)) {
             return;
         }
 
@@ -222,19 +230,19 @@ export namespace TrinityCore {
         bpaths.TrinityCore.mkdir()
 
         // We no longer make non-dynamic builds.
-        const scripts = Args.hasFlag('minimal',[process.argv,args1])
+        const scripts = Args.hasFlag('minimal', args1)
             ? `minimal-dynamic`
             : args1.includes('noscripts')
             ? 'none'
             : 'dynamic';
 
         const tools = args1.includes('notools') ? '0' : '1';
-        const generateOnly = args1.includes('--generate-only')
+        const generateOnly = Args.hasFlag('--generate-only', args1)
 
         let setupCommand: string;
         let buildCommand: string;
 
-        if(!Args.hasFlag('no-compile',[process.argv,args1])) {
+        if(!Args.hasFlag('no-compile', args1)) {
             if (isWindows()) {
                 setupCommand = `${cmake} -G "Visual Studio 17 2022" -DTOOLS=${tools}`
                 +` -DCMAKE_GENERATOR="Visual Studio 17 2022"`
@@ -244,11 +252,9 @@ export namespace TrinityCore {
                 +` -DOPENSSL_INCLUDE_DIR="${wfs.absPath(openssl)}/include"`
                 +` -DOPENSSL_ROOT_DIR="${wfs.absPath(openssl)}"`
                 +` -DBOOST_ROOT="${bpaths.boost.boost_1_82_0.abs().get()}"`
-                +` -DTRACY_ENABLE="${tracyEnabled?'ON':'OFF'}"`
                 +` -DBUILD_SHARED_LIBS="ON"`
-                +` -DTRACY_TIMER_FALLBACK="${!Args.hasFlag('tracy-better-timer',[process.argv,args1])?'ON':'OFF'}"`
                 +` -DBUILD_TESTING="OFF"`
-                +` -DASAN="${process.argv.includes('asan')?'ON':'OFF'}"`
+                +` ${tcCmakeParams}`
                 +` -S "${spaths.cores.TrinityCore.get()}"`
                 +` -B "${bpaths.TrinityCore.get()}"`;
                 buildCommand = `${cmake} --build ${bpaths.TrinityCore.get()} --config ${type}`;
@@ -264,18 +270,14 @@ export namespace TrinityCore {
                 // TODO: Set up optimization flags for o0 as debug and o3 as release
                 setupCommand = `cmake ${relSource}`
                 +` -DCMAKE_INSTALL_PREFIX=${relInstall}`
+                +` -DCMAKE_BUILD_TYPE=${type}`
                 +` -DCMAKE_C_COMPILER=/usr/bin/clang`
                 +` -DCMAKE_CXX_COMPILER=/usr/bin/clang++`
                 +` -DBUILD_SHARED_LIBS="ON"`
                 +` -DBUILD_TESTING="OFF"`
-                +` -DTRACY_ENABLED="${Args.hasFlag('tracy',[process.argv,args1])}"`
-                +` -DTRACY_TIMER_FALLBACK="${!Args.hasFlag('tracy-timer-fallback',[process.argv,args1])?'ON':'OFF'}"`
                 +` -DWITH_WARNINGS=1`
-                +` -DSCRIPTS=${scripts}`;
                 +` -DSCRIPTS=${scripts}`
-                +` -DASAN="${process.argv.includes('asan')?'ON':'OFF'}"`
-                +` -DTSAN="${process.argv.includes('tsan')?'ON':'OFF'}"`
-                +` -DUBSAN="${process.argv.includes('ubsan')?'ON':'OFF'}"`
+                +` ${tcCmakeParams}`
                 buildCommand = `make -j ${os.cpus().length}`;
                 await bpaths.TrinityCore.doIn(() => {
                     wsys.exec(setupCommand, 'inherit');
@@ -302,6 +304,11 @@ export namespace TrinityCore {
             bpaths.TrinityCore.tracy_dll(type)
                 .copy(ipaths.bin.core.pick('trinitycore').build.pick(type).tracy_client);
         } else {
+            // hackfix
+            if (spaths.join('install').exists()) {
+                spaths.join('install').copy(bpaths.TrinityCore.join('install'))
+                spaths.join('install').remove();
+            }
             [
                   bpaths.TrinityCore.lib_linux
                 , bpaths.TrinityCore.bin_linux
