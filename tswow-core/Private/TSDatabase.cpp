@@ -340,7 +340,7 @@ TSPreparedStatementBase* TSPreparedStatementBase::SetBinary(const uint8 index, T
 
 TSPreparedStatementBase TSPreparedStatement::Create()
 {
-    return TSPreparedStatementBase(new PreparedStatementBase(0,m_paramCount), this);
+    return TSPreparedStatementBase(new PreparedStatementBase(0,m_paramCount, "<ts_prepared>"), this);
 }
 
 std::shared_ptr<TSDatabaseResult> TSPreparedStatementWorld::Send(TSPreparedStatementBase* stmnt)
