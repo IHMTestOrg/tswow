@@ -308,8 +308,8 @@ export class Livescripts {
                 ? `"bin/cmake/bin/cmake.exe"`
                 : `cmake`)
             + ` --build ${builddir.lib.abs()}`
-            + ` --config ${buildType}`
-            + isWindows() ? `` : `--parallel ${os.cpus().length}`;
+            + (isWindows() ? `` : ` -j${os.cpus().length}`)
+            + ` --config ${buildType}`;
 
         try {
             term.log(this.logName(),`Compiling C++ binary...`)
