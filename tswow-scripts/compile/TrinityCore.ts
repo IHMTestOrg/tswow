@@ -302,6 +302,7 @@ export namespace TrinityCore {
             bpaths.TrinityCore.tracy_dll(type)
                 .copy(ipaths.bin.core.pick('trinitycore').build.pick(type).tracy_client);
         } else {
+            ipaths.bin.remove();
             [
                   bpaths.TrinityCore.lib_linux
                 , bpaths.TrinityCore.bin_linux
