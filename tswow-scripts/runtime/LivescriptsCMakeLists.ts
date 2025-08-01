@@ -73,7 +73,8 @@ target_include_directories(${buildModule} PUBLIC ../../../)
 
 # ts livescript headers
 target_include_directories(${buildModule} PUBLIC ./livescripts)
-target_precompile_headers(${buildModule} PUBLIC \${headers})
+file (GLOB module_headers "livescripts/*.h")
+target_precompile_headers(${buildModule} PUBLIC \${headers} \${module_headers})
 
 # defines
 ${(()=>{

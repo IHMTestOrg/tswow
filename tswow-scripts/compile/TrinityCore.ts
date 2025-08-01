@@ -25,6 +25,7 @@ import { term } from '../util/Terminal';
 import { copyExtLibs } from './CommonCore';
 import { bpaths, spaths } from './CompilePaths';
 import { DownloadFile } from './Downloader';
+import * as os from 'os';
 
 // https://stackoverflow.com/a/68703218/17188274
 function prefix(words: string[]){
@@ -271,7 +272,11 @@ export namespace TrinityCore {
                 +` -DTRACY_TIMER_FALLBACK="${!Args.hasFlag('tracy-timer-fallback',[process.argv,args1])?'ON':'OFF'}"`
                 +` -DWITH_WARNINGS=1`
                 +` -DSCRIPTS=${scripts}`;
-                buildCommand = 'make -j 4';
+                +` -DSCRIPTS=${scripts}`
+                +` -DASAN="${process.argv.includes('asan')?'ON':'OFF'}"`
+                +` -DTSAN="${process.argv.includes('tsan')?'ON':'OFF'}"`
+                +` -DUBSAN="${process.argv.includes('ubsan')?'ON':'OFF'}"`
+                buildCommand = `make -j ${os.cpus().length}`;
                 await bpaths.TrinityCore.doIn(() => {
                     wsys.exec(setupCommand, 'inherit');
                     if(generateOnly) return;
@@ -305,7 +310,9 @@ export namespace TrinityCore {
         }
 
         bpaths.TrinityCore.libraries(type).forEach(x=>{
-            x.copy(ipaths.bin.libraries.build.pick(type).join(x.basename()))
+            if (x.exists()) {
+                x.copy(ipaths.bin.libraries.build.pick(type).join(x.basename()))
+            }
         });
 
         if(isWindows()) {
