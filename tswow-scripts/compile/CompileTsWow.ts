@@ -41,6 +41,7 @@ setContext('build');
 let buildingScripts = false;
 
 async function compile(type: string, compileArgs: string[]) {
+    console.log(`compiling`)
     // Load necessary libraries
     const types = type.split(' ');
     function isType(check: string) {
@@ -58,13 +59,8 @@ async function compile(type: string, compileArgs: string[]) {
     if (isWindows()) { await SevenZipInstall.install(); }
     if (isWindows()) { await IMInstall.install() }
 
-    if (types.includes('full') || types.includes('release')) {
-        await TrinityCore.install(cmake, openssl, mysql, 'RelWithDebInfo', compileArgs.concat(['dynamic']));
-    } else {
-        if (type == 'trinitycore-release') { await TrinityCore.install(cmake, openssl, mysql, 'Release', compileArgs); }
-        if (isType('trinitycore') || isType('trinitycore-relwithdebinfo')) { await TrinityCore.install(cmake, openssl, mysql, 'RelWithDebInfo', compileArgs); }
-        if (type == 'trinitycore-debug') { await TrinityCore.install(cmake, openssl, mysql, 'Debug', compileArgs); }
-    }
+    await TrinityCore.install(cmake, openssl, mysql, 'Debug', [...compileArgs /*, 'msan', 'asan', 'tsan', 'ubsan'*/]);
+    //await TrinityCore.install(cmake, openssl, mysql, 'RelWithDebInfo', [...compileArgs]);
 
     if (isType('mpqbuilder')) { await MPQBuilder.create(cmake); }
     if (isType('blpconverter')) { await BLPConverter.install(cmake); }
@@ -132,18 +128,23 @@ async function main() {
 
 
 (async function(){
+    console.log(`v`)
     if(!spaths.tswow_scripts.wotlk.global_d_ts.exists()) {
         TrinityCore.headers(true);
     }
+    console.log(`d`)
 
     if(Args.hasFlag('gdts-only', [process.argv])) {
         TrinityCore.headers(true);
         process.exit(0);
     }
 
+    console.log(`a`)
     if(isInteractive) {
+        console.log(`b`)
         main();
     } else {
+        console.log(`c`)
         await compile(process.argv.includes('--release') ? 'release':'full',[]);
         process.exit(0);
     }

@@ -262,7 +262,7 @@ export namespace TrinityCore {
                 const relInstall = bpaths.TrinityCore
                     .relativeFrom(bpaths.TrinityCore.join('install','trinitycore'))
                 // TODO: Set up optimization flags for o0 as debug and o3 as release
-                setupCommand = `cmake ${relSource}`
+                setupCommand = `cmake ${relSource} -B ${bpaths.TrinityCore.get()}`
                 +` -DCMAKE_INSTALL_PREFIX=${relInstall}`
                 +` -DCMAKE_C_COMPILER=/usr/bin/clang`
                 +` -DCMAKE_CXX_COMPILER=/usr/bin/clang++`
@@ -276,11 +276,12 @@ export namespace TrinityCore {
                 +` -DASAN="${process.argv.includes('asan')?'ON':'OFF'}"`
                 +` -DTSAN="${process.argv.includes('tsan')?'ON':'OFF'}"`
                 +` -DUBSAN="${process.argv.includes('ubsan')?'ON':'OFF'}"`
-                buildCommand = `make -j ${os.cpus().length}`;
+                +` -DMSAN="${process.argv.includes('msan')?'ON':'OFF'}"`
+                wsys.exec(setupCommand, 'inherit')
+                if (generateOnly) return;
+                buildCommand = `cmake --build ${bpaths.TrinityCore.get()} -j${os.cpus().length} --config ${type}`
+                wsys.exec(buildCommand, 'inherit')
                 await bpaths.TrinityCore.doIn(() => {
-                    wsys.exec(setupCommand, 'inherit');
-                    if(generateOnly) return;
-                    wsys.exec(buildCommand, 'inherit');
                     wsys.exec('make install', 'inherit');
                 })
                 if(generateOnly) return;
